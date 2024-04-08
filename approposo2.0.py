@@ -8,29 +8,43 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-
-def product_info():
+def get_collection_info(collection_name):
     driver = login()
     # Wait for the products page to load
     time.sleep(5)
-    whats_new_category(driver)
+    collection_details(driver, collection_name)
     data = infinite_scroll(driver)
     get_product_details(data, driver)
-    csv_export(data)
+    csv_export(data, collection_name)
 
+def get_collections_info(collection_count):
+    driver = login()
+    # Wait for the products page to load
+    time.sleep(5)
+    print("before foreach")
+    for collection_number in range(collection_count):
+        print("inside foreach")
+        collection_name = 'collection-' + str(collection_number) + '-view-all'
+        print(collection_name)
+        collection_details(driver, collection_name)
+        data = infinite_scroll(driver)
+        category_name = get_product_details(data, driver)
+        print(category_name)
+        csv_export(data, category_name)
+        driver.back()
 
-def csv_export(data):
+def csv_export(data, category_name):
     df = pd.DataFrame(data)
     # Save the DataFrame to a CSV file
-    df.to_csv("products.csv", index=False)
-    print("Products data saved to products.csv")
-
+    csv_name = category_name + '.csv'
+    df.to_csv(csv_name, index=False)
+    print("Products data saved to " + csv_name)
 
 def get_product_details(data, driver):
+    category_name = driver.find_element(By.XPATH, "//div[@class='font-bold text-[24px] smScreen:text-sm']").text
     elements = driver.find_elements(By.XPATH, "//div[@class='product-info-card']")
     for element in elements:
-        name_element = element.find_element(By.XPATH,
-                                            ".//div[contains(@class, 'text-theme_1_grey2') and contains(@class, 'line-clamp-2')]")
+        name_element = element.find_element(By.XPATH, ".//div[contains(@class, 'text-theme_1_grey2') and contains(@class, 'line-clamp-2')]")
         name = name_element.text
 
         price_element = element.find_element(By.XPATH, ".//span[@class='text-base font-bold smScreen:text-xs']")
@@ -39,7 +53,7 @@ def get_product_details(data, driver):
         data.append((name, price))
     for name, price in data:
         print(f"Name: {name}, Price: {price}")
-
+    return category_name
 
 def infinite_scroll(driver):
     last_height = driver.execute_script("return document.body.scrollHeight")
@@ -55,10 +69,12 @@ def infinite_scroll(driver):
     return data
 
 
-def whats_new_category(driver):
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'collection-0-view-all')))
-    driver.find_element(By.XPATH, '//*[@id="collection-0-view-all"]/span').click()
-    print("inside what's new")
+def collection_details(driver, collection):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, collection)))
+    collection_xpath = '//*[@id="' + collection + '"]/span'
+    print(collection_xpath)
+    driver.find_element(By.XPATH, collection_xpath).click()
+    print("inside " + collection)
     time.sleep(5)
 
 
@@ -76,5 +92,29 @@ def login():
     print("login successful")
     return driver
 
+# get_collection_info("collection-1-view-all")
+# get_collection_info("collection-2-view-all")
+# get_collection_info("collection-3-view-all")
+# get_collection_info("collection-4-view-all")
+# get_collection_info("collection-5-view-all")
+# get_collection_info("collection-6-view-all")
+# get_collection_info("collection-7-view-all")
+# get_collection_info("collection-8-view-all")
+# get_collection_info("collection-9-view-all")
+# get_collection_info("collection-10-view-all")
+# get_collection_info("collection-11-view-all")
+# get_collection_info("collection-12-view-all")
+# get_collection_info("collection-13-view-all")
+# get_collection_info("collection-14-view-all")
+# get_collection_info("collection-15-view-all")
+# get_collection_info("collection-16-view-all")
+# get_collection_info("collection-17-view-all")
+# get_collection_info("collection-18-view-all")
+# get_collection_info("collection-19-view-all")
+# get_collection_info("collection-20-view-all")
 
-product_info()
+get_collections_info(20)
+
+
+
+# //*[@id="collection-0-view-all"]/span
